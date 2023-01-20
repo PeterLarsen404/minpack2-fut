@@ -98,10 +98,10 @@ def dficfj_test_ad [n] (x : [n]f64) : [n]f64 =
   dficfj 2 x 1f64 :> [n]f64
 
 
--- dficfj test nint 2
+-- dficfj_ad_fwd test nint 2
 -- ==
 -- compiled input {2i64}
--- output @ ./dataset/dficfj_jac_test.out
+-- output @ ./dataset/dficfj_jac_2.out
 
 
 let main (nint : i64)  =
