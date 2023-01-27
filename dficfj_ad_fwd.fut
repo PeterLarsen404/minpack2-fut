@@ -131,47 +131,25 @@ def dficfj_test_ad [n] (x : [n]f64) : [n]f64 =
   let nint = n/8i64
   in dficfj nint x 1f64 :> [n]f64
 
-
--- dficfj test nint 1
--- ==
--- compiled input {1i64}
--- auto output
-
 -- dficfj test nint 2
 -- ==
--- compiled input {2i64}
+-- compiled input @ {./dataset/dficfj_XS_2.in}
 -- auto output
 
 -- dficfj test nint 10
 -- ==
--- compiled input {10i64}
+-- compiled input @ {./dataset/dficfj_XS_10.in}
 -- auto output
 
 -- dficfj test nint 100
 -- ==
--- compiled input {100i64}
+-- compiled input @ {./dataset/dficfj_XS_100.in}
 -- auto output
 
 -- dficfj test nint 1000
 -- ==
--- compiled input {1000i64}
+-- compiled input @ {./dataset/dficfj_XS_1000.in}
 -- auto output
 
--- dficfj test nint 10000 !CAREFUL! Runs out of memory.
--- compiled input {10000i64}
--- auto output
-
--- dficfj test nint 100000. !CAREFUL! Runs out of memory.
--- compiled input {100000i64}
--- auto output
-
-
--- dficfj test nint 1000000. !CAREFUL! Runs out of memory.
--- compiled input {1000000i64}
--- auto output
-
-
-let main (nint : i64)  =
-  let arr_size = nint*8
-  let x : [arr_size]f64 = task_XS nint :> [arr_size]f64
-  in flatten (tabulate arr_size (\ i -> jvp dficfj_test_ad x (replicate arr_size 0 with [i] = 1)))
+let main (x : [n]f64)  =
+  flatten (tabulate n (\ i -> jvp dficfj_test_ad x (replicate n 0 with [i] = 1)))
