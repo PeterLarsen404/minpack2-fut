@@ -1,5 +1,5 @@
 -- Generate the x array from nint. This function corresponds to the dficfj function with task = 'XS'
-def task_XS_opt (nint : i64) : []f64 =
+def task_XS (nint : i64) : []f64 =
   let zero   : f64 = 0.0
   let one    : f64 = 1.0
   let two    : f64 = 2.0
@@ -9,13 +9,11 @@ def task_XS_opt (nint : i64) : []f64 =
 
   let h : f64 = 1f64 / (f64.i64 nint)
 
-  -- Exclusive scan.
-  let xts = scan (+) zero (replicate (nint-1i64) h)
-  let xts : [nint]f64 = tabulate nint (\ i -> if i == 0 then zero else xts[i-1])
-  -- Compute 8 elements of x for each xt in xts
-  let x = flatten (map (\xt -> [xt*xt*(three-two*xt),six*xt*(one-xt),six*(one-two*xt),-twelve,zero,zero,zero,zero]) xts)
+  -- Compute 8 elements of x, nint times
+  let x = flatten (tabulate nint (\i ->
+    let xt = f64.i64 i*h
+    in [xt*xt*(three-two*xt),six*xt*(one-xt),six*(one-two*xt),-twelve,zero,zero,zero,zero]))
   in x
-
 
 -- Computes the collocation and continuity equations (4 collocation, 4 continuity). "b" goes from 1 to nint
 def mk_eq [n] (nint_ : i64) (r: f64) (b : i64) (rhnfhk : [][][][]f64) (x : [n]f64) : [8]f64 =
