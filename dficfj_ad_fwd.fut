@@ -133,22 +133,22 @@ def dficfj_test_ad [n] (x : [n]f64) : [n]f64 =
 
 -- dficfj test nint 2
 -- ==
--- compiled input @ {./dataset/dficfj_XS_2.in}
+-- compiled input @ ./dataset/dficfj_XS_2.out
 -- auto output
 
 -- dficfj test nint 10
 -- ==
--- compiled input @ {./dataset/dficfj_XS_10.in}
+-- compiled input @ ./dataset/dficfj_XS_10.out
 -- auto output
 
 -- dficfj test nint 100
 -- ==
--- compiled input @ {./dataset/dficfj_XS_100.in}
+-- compiled input @ ./dataset/dficfj_XS_100.out
 -- auto output
 
 -- dficfj test nint 1000
 -- ==
--- compiled input @ {./dataset/dficfj_XS_1000.in}
+-- compiled input @ ./dataset/dficfj_XS_1000.out
 -- auto output
 
 let main [n] (x : [n]f64)  =
