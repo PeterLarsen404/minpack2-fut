@@ -151,5 +151,5 @@ def dficfj_test_ad [n] (x : [n]f64) : [n]f64 =
 -- compiled input @ {./dataset/dficfj_XS_1000.in}
 -- auto output
 
-let main (x : [n]f64)  =
+let main [n] (x : [n]f64)  =
   flatten (transpose (tabulate n (\ i -> vjp dficfj_test_ad x (replicate n 0 with [i] = 1))))
