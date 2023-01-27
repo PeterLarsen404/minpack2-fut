@@ -152,4 +152,5 @@ def dficfj_test_ad [n] (x : [n]f64) : [n]f64 =
 -- auto output
 
 let main [n] (x : [n]f64)  =
-  flatten (transpose (tabulate n (\ i -> vjp dficfj_test_ad x (replicate n 0 with [i] = 1))))
+  flatten (transpose (tabulate n (\ i ->
+    vjp dficfj_test_ad x (replicate n 0 with [i] = 1))))
