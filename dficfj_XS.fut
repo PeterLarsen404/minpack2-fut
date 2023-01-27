@@ -45,4 +45,4 @@ def task_XS (nint : i64) : []f64 =
 -- output @ ./dataset/dficfj_XS_10000.out
 
 let main (nint : i64) =
-  task_XS_opt nint
+  task_XS nint
