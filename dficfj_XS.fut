@@ -1,4 +1,5 @@
--- Generate the x array from nint. This function corresponds to the dficfj function with task = 'XS'
+-- Generate the x array from nint.
+-- This function corresponds to the dficfj function with task = 'XS'
 def task_XS (nint : i64) : []f64 =
   let zero   : f64 = 0.0
   let one    : f64 = 1.0
@@ -12,7 +13,10 @@ def task_XS (nint : i64) : []f64 =
   -- Compute 8 elements of x, nint times
   let x = flatten (tabulate nint (\i ->
     let xt = f64.i64 i*h
-    in [xt*xt*(three-two*xt),six*xt*(one-xt),six*(one-two*xt),-twelve,zero,zero,zero,zero]))
+    in [xt*xt*(three-two*xt),
+        six*xt*(one-xt),
+        six*(one-two*xt),
+        -twelve,zero,zero,zero,zero]))
   in x
 
 -- task_XS test nint 2
