@@ -20,7 +20,7 @@ def task_XS (nint : i64) : []f64 =
   in x
 
 -- Computes the collocation and continuity equations
---   (4 collocation, 4 continuity).
+-- (4 collocation, 4 continuity).
 -- "b" goes from 1 to nint.
 def mk_eq [n] (nint_ : i64) (r: f64) (b : i64)
               (rhnfhk : [][][][]f64) (x : [n]f64) : [8]f64 =

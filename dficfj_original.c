@@ -11,7 +11,9 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "f2c.h"
+#include "time.h"
 
 /* Subroutine */ int dficfj_(integer *n, doublereal *x, doublereal *fvec,
 	doublereal *fjac, integer *ldfjac, char *task, doublereal *r__,
@@ -296,9 +298,9 @@
   return 0;
 } /* dficfj_ */
 
-int input = 1;
+int printout = 0;
 
-int runFunction(int intervals, int task) {
+int runFunction(int intervals, const char* f_in, const char* f_out) {
   integer nint = intervals;
   integer n = 8*nint;
   doublereal* x = malloc(n * sizeof(doublereal));
@@ -306,61 +308,205 @@ int runFunction(int intervals, int task) {
   doublereal* fjac = NULL;
   integer ldfjac = 0;
   doublereal r = 1;
+  clock_t start_time, end_time;
+  FILE* f;
 
+  start_time = clock();
   dficfj_(&n, x, NULL, NULL, &ldfjac, "XS", &r, &nint, 2);
-  if (task == 0 || task == 2) {
-    printf("%di64 ", intervals);
-    printf("[");
-    for (int i = 0; i < n-1; i++) {
-    printf("%.17f,", x[i]);
-    }
-    printf("%f", x[n-1]);
-    printf("] ");
-    printf("%ff64", r);
-    printf("\n");
+  end_time = clock();
+  printf("XS time: %f\n", (double)(end_time - start_time) / CLOCKS_PER_SEC);
+
+  if (printout == 1) {
+	f = fopen(f_in, "w");
+
+	// --- intervals value ---
+	fprintf(f, "b");
+
+	unsigned char version = 2;
+	fwrite(&version, 1, 1, f);
+
+	unsigned char dim = 0;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " i64");
+
+	unsigned long long intervals_lld = intervals;
+	fwrite(&intervals_lld, sizeof(unsigned long long), 1, f);
+	// ---
+
+	// --- x array ---
+	fprintf(f, "b");
+
+	version = 2;
+	fwrite(&version, 1, 1, f);
+
+	dim = 1;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	unsigned long long dim_1 = n;
+	fwrite(&dim_1, sizeof(unsigned long long), 1, f);
+
+	for (int i = 0; i < n; i++) {
+	  fwrite(&(x[i]), sizeof(double), 1, f);
+	}
+	// ---
+
+	// --- r value ---
+	fprintf(f, "b");
+
+	version = 2;
+	fwrite(&version, 1, 1, f);
+
+	dim = 0;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	fwrite(&r, sizeof(double), 1, f);
+	// ---
+
+	fclose(f);
   }
 
+  start_time = clock();
   dficfj_(&n, x, fvec, NULL, &ldfjac, "F", &r, &nint, 1);
+  end_time = clock();
+  printf("F time: %f\n", (double)(end_time - start_time) / CLOCKS_PER_SEC);
 
-  if (task == 1 || task == 2) {
-    printf("[");
-    for (int i = 0; i < n-1; i++) {
-    printf("%.17f,", fvec[i]);
-    }
-    printf("%f", fvec[n-1]);
-    printf("]\n");
+  if (printout == 1) {
+	f = fopen(f_out, "w");
+
+	// --- fvec array ---
+	fprintf(f, "b");
+
+	unsigned char version = 2;
+	fwrite(&version, 1, 1, f);
+
+	unsigned char dim = 1;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	unsigned long long dim_1 = n;
+	fwrite(&dim_1, sizeof(unsigned long long), 1, f);
+
+	for (int i = 0; i < n; i++) {
+	  fwrite(&(fvec[i]), sizeof(double), 1, f);
+	}
+	// ---
+
+	fclose(f);
   }
-
 
   free(x);
   free(fvec);
 }
 
-int runJacobian(int nint) {
+int runJacobian(int intervals, const char* f_in, const char* f_out) {
+  integer nint = intervals;
   integer n = 8*nint;
   doublereal* x = calloc(n, sizeof(doublereal));
   doublereal* fvec = calloc(n, sizeof(doublereal));;
-  integer ldfjac = 8*nint;
+  integer ldfjac = n;
   doublereal* fjac = calloc(n * ldfjac, sizeof(doublereal));
   doublereal r = 1;
+  time_t start_time, end_time;
+  FILE* f;
 
+  start_time = clock();
   dficfj_(&n, x, fvec, fjac, &ldfjac, "XS", &r, &nint, 2);
-  //printf("---\n");
-  dficfj_(&n, x, fvec, fjac, &ldfjac, "J", &r, &nint, 1);
+  end_time = clock();
+  printf("XS time: %f\n", (double)(end_time - start_time) / CLOCKS_PER_SEC);
 
-  printf("[");
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < ldfjac; j++) {
-      doublereal val = fjac[j + i * ldfjac];
-      if(i == n-1 && j == ldfjac-1) {
-        printf("%.5f]", fjac[j + i * ldfjac]);
-      } else {
-        printf("%.5f, ", fjac[j + i * ldfjac]);
-      }
-    }
-    printf("\n");
+  if (printout == 1) {
+	f = fopen(f_in, "w");
+
+	// --- intervals value ---
+	fprintf(f, "b");
+
+	unsigned char version = 2;
+	fwrite(&version, 1, 1, f);
+
+	unsigned char dim = 0;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " i64");
+
+	unsigned long long intervals_lld = intervals;
+	fwrite(&intervals_lld, sizeof(unsigned long long), 1, f);
+	// ---
+
+	// --- x array ---
+	fprintf(f, "b");
+
+	version = 2;
+	fwrite(&version, 1, 1, f);
+
+	dim = 1;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	unsigned long long dim_1 = n;
+	fwrite(&dim_1, sizeof(unsigned long long), 1, f);
+
+	for (int i = 0; i < n; i++) {
+	  fwrite(&(x[i]), sizeof(double), 1, f);
+	}
+	// ---
+
+	// --- r value ---
+	fprintf(f, "b");
+
+	version = 2;
+	fwrite(&version, 1, 1, f);
+
+	dim = 0;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	fwrite(&r, sizeof(double), 1, f);
+	// ---
+
+	fclose(f);
   }
 
+  start_time = clock();
+  dficfj_(&n, x, fvec, fjac, &ldfjac, "J", &r, &nint, 1);
+  end_time = clock();
+  printf("J time: %f\n", (double)(end_time - start_time) / CLOCKS_PER_SEC);
+
+  if (printout == 1) {
+	f = fopen(f_out, "w");
+
+	// --- fjac array ---
+	fprintf(f, "b");
+
+	unsigned char version = 2;
+	fwrite(&version, 1, 1, f);
+
+	unsigned char dim = 2;
+	fwrite(&dim, 1, 1, f);
+
+	fprintf(f, " f64");
+
+	unsigned long long dim_1 = n;
+	fwrite(&dim_1, sizeof(unsigned long long), 1, f);
+	unsigned long long dim_2 = ldfjac;
+	fwrite(&dim_2, sizeof(unsigned long long), 1, f);
+
+	for (int i = 0; i < n; i++) {
+	  for (int j = 0; j < ldfjac; j++) {
+		fwrite(&(fjac[j + i * ldfjac]), sizeof(double), 1, f);
+	  }
+	}
+	// ---
+
+	fclose(f);
+  }
 
   free(x);
   free(fvec);
@@ -368,15 +514,28 @@ int runJacobian(int nint) {
 }
 
 int main(int argc, char* argv[]) {
-  if (atoi(argv[1]) == 0) {
-    runFunction(atoi(argv[2]),atoi(argv[3]));
-    return 0;
-  } else if (atoi(argv[1]) == 1) {
-    runJacobian(atoi(argv[2]));
-    return 0;
+  if (argc == 3) {
+	printout = 0;
+	if (strcmp(argv[1], "F") == 0) {
+	  runFunction(atoi(argv[2]), "","");
+	} else if (strcmp(argv[1], "J") == 0) {
+	  runJacobian(atoi(argv[2]), "","");
+	} else {
+	  printf("Wrong task specified. Use F or J\n");
+	  return 1;
+	}
+  } else if (argc == 5) {
+	printout = 1;
+	if (strcmp(argv[1], "F") == 0) {
+	  runFunction(atoi(argv[2]), argv[3], argv[4]);
+	} else if (strcmp(argv[1], "J") == 0) {
+	  runJacobian(atoi(argv[2]), argv[3], argv[4]);
+	} else {
+	  printf("Wrong task specified. Use F or J\n");
+	  return 1;
+	}
   } else {
-  return 1;
+	printf("Wrong number of arguments.\nUsage: ./dficfj <task> <nint> [in] [out]\n");
   }
+  return 0;
 }
-
-
