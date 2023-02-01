@@ -76,8 +76,6 @@ def dficfj (nint : i64) (x : []f64) (r : f64) : []f64 =
   let dim_ : i64 = dim+1
   let deg_ : i64 = deg+1
 
-  let one    : f64 = 1.0
-
   let h = 1f64 / (f64.i64 nint)
 
   -- Predefined rho array
@@ -87,39 +85,29 @@ def dficfj (nint : i64) (x : []f64) (r : f64) : []f64 =
     0.669990539550781250,
     0.930568158626556396
   ]
-  let rho_2d = map (\ elem ->
-    tabulate dim_ (\x -> if x == 0 then 1 else elem)) rho
 
-  let hm = one
   -- Store every value of hm in a an array.
-  -- Exclusive scan.
-  let hms = scan (*) hm (replicate (deg) h)
-  let hms = tabulate (deg+1i64) (\ i -> if i == 0 then hm else hms[i-1])
+  let hms = tabulate deg_ (\i -> h**(f64.i64 i))
 
   -- Store every value of rhoijh in a 3d array. 5(#hms) x 4(#rho) x 8(#dim_)
-  let rhoijhs = map (\ h -> (map (\ r -> (scan (*) h r)) rho_2d)) hms
+  let rhoijhs : [deg_][cpts][dim_]f64 = tabulate_3d deg_ cpts dim_ (\ i j k ->
+                                          hms[i]*(rho[j]**(f64.i64 k)))
 
   -- Store every value of nf in an array.
-  let nfs_i64 = scan (*) 1 (tabulate dim_ (\ x -> if x == 0 then 1 else x))
+  let nfs : [dim_]f64 = [1,1,2,2*3,2*3*4,2*3*4*5,2*3*4*5*6,2*3*4*5*6*7]
+    :> [dim_]f64
 
   -- Create the 4d rhnfhk array:
-  let rhnfhk = tabulate deg_ (\m ->
-    tabulate_3d cpts dim_ dim_ (\ i j k -> rhoijhs[m,i,j]/(f64.i64 nfs_i64[k])))
+  let rhnfhk : [deg_][cpts][dim_][dim_]f64 = tabulate deg_ (\m ->
+    tabulate_3d cpts dim_ dim_ (\ i j k -> rhoijhs[m,i,j]/nfs[k]))
 
   -- Rearrange rhnfhk to make it fit the one in fortran. (Costly)
-  let rhnfhk =
-    map (\ i ->
-      map (\j ->
-        map (\k ->
-          map (\m -> rhnfhk[m,i,j,k])
-              (iota (deg_))
-          ) (iota (dim_))
-        ) (iota dim_))
-        (iota (cpts))
+  let rhnfhk : [cpts][dim_][dim_][deg_]f64 = tabulate cpts (\i ->
+      tabulate_3d dim_ dim_ deg_ (\ j k m -> rhnfhk[m,i,j,k]))
 
   -- Compute fvec
   let fvec =
-    flatten (map (\ i -> mk_eq (nint-1) r i (copy rhnfhk) (copy x)) (iota nint))
+    flatten (map (\ i -> mk_eq (nint-1) r i rhnfhk x) (iota nint))
 
   -- Prepend x[0], x[1] and remove last two elements.
   let fvec = tabulate (npi*nint) (\ i -> if i < 2 then x[i] else fvec[i-2])
